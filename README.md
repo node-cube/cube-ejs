@@ -2,6 +2,10 @@
 
   npm install cube-ejs
 
+## this module need runtime lib
+
+you should copy the `runtime.js` to your project
+
 ## write a processor
 
 ```js
@@ -27,3 +31,4 @@ Processor.prototype.process = function (file, options, callback) {
 
 module.exports = Processor;
 ```
+
