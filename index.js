@@ -31,7 +31,12 @@ EjsProcessor.prototype = {
     }
     if (options.moduleWrap) {
       var wraped = 'var f = require("ejs_runtime");' + code +
-         ';module.exports=function(o){return anonymous(o, f)};';
+         ';module.exports=function(o, cf){\
+        for(var i in cf) {\
+          if (cf.hasOwnProperty(i)) {\
+            f[i] = cf[i];\
+          }\
+        }; return anonymous(o, f)};';
       res.wraped = this.cube.wrapTemplate(options.qpath, wraped, ['ejs_runtime']);
     }
     res.code = code;
@@ -39,6 +44,5 @@ EjsProcessor.prototype = {
     callback(null, res);
   }
 };
-
 
 module.exports = EjsProcessor;
