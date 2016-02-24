@@ -1,42 +1,51 @@
 var TestMod = require('../index');
 var expect = require('expect.js');
+var fs = require('fs');
+var path = require('path');
 
 describe('cube-ejs', function () {
   it('expect info', function () {
-    expect(TestMod.info.type).to.be('template');
-    expect(TestMod.info.ext).to.be('.ejs');
+    expect(TestMod.type).to.be('template');
+    expect(TestMod.ext).to.be('.ejs');
   });
-  it ('expect processor ejs file fine', function (done) {
+  it('expect processor ejs file fine', function (done) {
     require = function () {
       return {};
     };
-    var options = {
-      release: false,
-      moduleWrap: true,
+    var file = '/test.ejs';
+    var code = fs.readFileSync(path.join(__dirname, file)).toString();
+    var data = {
       compress: true,
-      qpath: '/test.ejs',
+      queryPath: file,
+      code: code,
+      source: code,
       root: __dirname
     };
     var cube = {
-      config: options,
+      config: {
+        release: false,
+        moduleWrap: true,
+        compress: true,
+        root: __dirname
+      },
       wrapTemplate: function (file, code, require) {
-        return 'Cube("' + file + '",' + JSON.stringify(require) + ',function(module){' + code + ';return module.exports});';
+        return 'Cube("' + file + '", [], function(module){' + code + ';return module.exports});';
       }
     };
     function Cube(mod, requires, cb) {
       expect(mod).to.be('/test.ejs');
-      expect(requires).to.eql(['ejs_runtime']);
+      expect(requires).to.eql([]);
       var tpl = cb({});
       expect(tpl({name: 'fishbar'})).to.match(/<div>fishbar<\/div>/);
       done();
     }
     var processor = new TestMod(cube);
-    processor.process('/test.ejs', options, function (err, res) {
+    processor.process(data, function (err, res) {
       expect(err).to.be(null);
-      expect(res).have.keys(['source', 'code', 'wraped']);
+      expect(res).have.keys(['source', 'code']);
       expect(res.source).match(/<%= name %>/);
-      console.log(res.wraped);
-      eval(res.wraped);
+      res.codeWraped = cube.wrapTemplate(file, res.code, []);
+      eval(res.codeWraped);
     });
   });
 
@@ -44,21 +53,28 @@ describe('cube-ejs', function () {
     require = function () {
       return {};
     };
-    var options = {
-      release: false,
-      moduleWrap: true,
+    var file = '/test_err.ejs';
+    var code = fs.readFileSync(path.join(__dirname, file)).toString();
+    var data = {
       compress: true,
-      qpath: '/test_err.ejs',
+      queryPath: file,
+      code: code,
+      source: code,
       root: __dirname
     };
     var cube = {
-      config: options,
+      config: {
+        release: false,
+        moduleWrap: true,
+        compress: true,
+        root: __dirname
+      },
       wrapTemplate: function (file, code, require) {
-        return 'Cube("' + file + '",' + JSON.stringify(require) + ',function(module){' + code + ';return module.exports});';
+        return 'Cube("' + file + '", [], function(module){' + code + ';return module.exports});';
       }
     };
     var processor = new TestMod(cube);
-    processor.process('/test_err.ejs', options, function (err, res) {
+    processor.process(data, function (err, res) {
       expect(err).to.be.ok();
       done();
     });

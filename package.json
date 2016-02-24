@@ -2,7 +2,7 @@
   "author": "fish <zhengxinlin@gmail.com> (https://github.com/fishbar)",
   "name": "cube-ejs",
   "description": "the ejs template processor for cube",
-  "version": "0.0.3",
+  "version": "2.0.0",
   "homepage": "https://github.com/node-cube/cube-ejs",
   "repository": {
     "type": "git",
@@ -13,12 +13,10 @@
     "test": "node_modules/.bin/mocha -r jscoverage --coverage 70,80,95 -R spec test"
   },
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=4.0.0"
   },
   "dependencies": {
-    "ejs": "1.0.0",
-    "uglify-js": "2.4.15",
-    "debug": "*"
+    "ejs": "2.4.1"
   },
   "devDependencies": {
     "jscoverage": "0.5.x",

@@ -1,48 +1,30 @@
 var path = require('path');
 var ejs = require('ejs');
-var fs = require('fs');
-var ug = require('uglify-js');
 
 function EjsProcessor(cube) {
   this.cube = cube;
 }
-EjsProcessor.info = {
-  type: 'template',
-  ext: '.ejs'
-};
+EjsProcessor.type = 'template';
+EjsProcessor.ext = '.ejs';
 
-EjsProcessor.prototype = {
-  process: function (file, options, callback) {
-    var code;
-    var res = {};
-    var root = options.root;
-    var fpath = path.join(root, file);
-    code = fs.readFileSync(fpath, 'utf8').toString();
-    res.source = code;
-    try {
-      var resFun = ejs.compile(code, {filename: fpath, client: true, compileDebug: !options.compress});
-      code = resFun.toString();
-    } catch (e) {
-      e.message += '\n file:' + file;
-      return callback(e);
-    }
-    if (options.compress) {
-      code = ug.minify(code, {fromString: true}).code;
-    }
-    if (options.moduleWrap) {
-      var wraped = 'var f = require("ejs_runtime");' + code +
-         ';module.exports=function(o, cf){\
-        for(var i in cf) {\
-          if (cf.hasOwnProperty(i)) {\
-            f[i] = cf[i];\
-          }\
-        }; return anonymous(o, f)};';
-      res.wraped = this.cube.wrapTemplate(options.qpath, wraped, ['ejs_runtime']);
-    }
-    res.code = code;
-
-    callback(null, res);
+EjsProcessor.prototype.process = function (data, callback) {
+  var code;
+  var res = {};
+  var config = this.cube.config;
+  var root = config.root;
+  var file = data.realPath;
+  try {
+    code = ejs.compile(data.code, {
+      filename: file,
+      client: true,
+      cache: false,
+      compileDebug: config.debug
+    });
+  } catch (e) {
+    return callback(e);
   }
+  data.code = code + '; module.exports = anonymous;';
+  callback(null, data);
 };
 
 module.exports = EjsProcessor;
